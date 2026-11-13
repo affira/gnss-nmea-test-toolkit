@@ -10,7 +10,9 @@ feature was written together with its tests, and expected values for real logs w
 independently of the code (with grep and awk) before being used in tests.
 
 Status: parser, log reader, analyser, fault injector, synthetic logs and report CLI are done.
-GitHub Actions CI is planned and not yet added.
+GitHub Actions CI ([ci.yml](.github/workflows/ci.yml)) runs pytest and Robot Framework on
+Python 3.11 and 3.12, checks the synthetic logs, generates a sample report and uploads the
+Robot report as an artifact.
 
 ## What it does
 

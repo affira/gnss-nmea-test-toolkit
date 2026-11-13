@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Tests (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install
+        run: pip install -e ".[dev]"
+
+      - name: Unit tests (pytest, with branch coverage)
+        run: pytest --cov=gnsskit --cov-branch --cov-report=term-missing
+
+      - name: Synthetic logs match their generator
+        run: python scripts/make_synthetic.py --check
+
+      - name: Acceptance tests (Robot Framework)
+        run: robot --outputdir results tests/acceptance
+
+      # gnsskit report exits 0 PASS, 1 FAIL, 3 INCOMPLETE, 2 usage or input error.
+      # The sample log is expected to FAIL its illustrative thresholds, so 0, 1 and 3
+      # are all fine here. Only 2 (or any other code) fails the build. Python also exits
+      # 1 on an uncaught exception, so the step additionally requires a written report
+      # with a verdict line.
+      - name: Sample report from a real log
+        shell: bash
+        run: |
+          set +e
+          gnsskit report data/real/unicore-um621.log -o results/sample-report.md
+          code=$?
+          set -e
+          echo "gnsskit report exit code: $code"
+          case "$code" in
+            0|1|3) ;;
+            2) echo "::error::gnsskit report returned 2 (usage or input error)"; exit 1 ;;
+            *) echo "::error::gnsskit report returned unexpected exit code $code"; exit 1 ;;
+          esac
+          grep -q '^## Verdict: ' results/sample-report.md \
+            || { echo "::error::sample report has no verdict line"; exit 1; }
+
+      - name: Upload Robot report and sample report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports-python-${{ matrix.python-version }}
+          path: |
+            results/log.html
+            results/report.html
+            results/output.xml
+            results/sample-report.md
+          if-no-files-found: warn
