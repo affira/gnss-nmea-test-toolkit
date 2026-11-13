@@ -20,6 +20,21 @@ python3.12 -m venv .venv
 .venv/bin/robot --outputdir results tests/acceptance
 ```
 
+## Fault injection
+
+Write a copy of a clean log with controlled faults, plus a JSON manifest that says
+what was injected and what the analyser must report:
+
+```sh
+gnsskit inject data/real/ublox-neo-m9n-nmea.log -o faulty.log --seed 42 \
+    --outage 10:30 --bad-checksums 3 --midnight 20
+```
+
+Options: `--bad-checksums N`, `--truncate N`, `--blank-positions N`, `--unknown N`,
+`--garbage N`, `--drop-gsv-parts N`, `--outage START:DURATION`, `--gap START:DURATION`,
+`--midnight SECONDS`. Windows are in seconds from the first epoch. The output starts
+with a `# FAULT-INJECTED` header line so it cannot be mistaken for a real recording.
+
 ## Data
 
 The real logs come from the gpsd project (BSD-2-Clause). See [data/SOURCES.md](data/SOURCES.md).
