@@ -1,0 +1,13 @@
+# ILLUSTRATIVE EXAMPLE PROFILE.
+# Stricter example values for a high-precision use case, chosen for this portfolio
+# project. They are not taken from any product datasheet, standard or company
+# specification.
+name: high-precision
+description: Stricter check for a high-precision application (illustrative)
+illustrative: true
+thresholds:
+  min_availability_pct: 99.0
+  max_ttff_s: 30.0
+  max_hdop_p95: 1.0
+  max_cep95_m: 0.5
+  max_integrity_errors: 0

@@ -250,7 +250,7 @@ def _ttff(epochs: list[Epoch], timed: list[Epoch]) -> tuple[float | None, str | 
     untimed_before = sum(1 for e in epochs[:first_fix] if e.seconds is None)
     start = timed[0]
     if start is epochs[first_fix] and untimed_before == 0:
-        return None, "log starts with a fix; TTFF not measurable"
+        return None, "log starts with a fix"
     ttff = epochs[first_fix].seconds - start.seconds  # type: ignore[operator]
     note = None
     if untimed_before:

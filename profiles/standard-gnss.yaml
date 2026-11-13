@@ -1,0 +1,12 @@
+# ILLUSTRATIVE EXAMPLE PROFILE.
+# These threshold values are example figures chosen for this portfolio project.
+# They are not taken from any product datasheet, standard or company specification.
+name: standard-gnss
+description: General-purpose GNSS receiver acceptance check (illustrative)
+illustrative: true
+thresholds:
+  min_availability_pct: 95.0  # fix availability, percent of expected epochs
+  max_ttff_s: 60.0            # time to first fix, seconds
+  max_hdop_p95: 2.0           # 95th percentile of HDOP over fix epochs
+  max_cep95_m: 5.0            # CEP95, metres (static logs only)
+  max_integrity_errors: 0     # parse and log errors; unrecognised sentence types excluded
