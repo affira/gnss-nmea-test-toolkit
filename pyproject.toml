@@ -8,6 +8,8 @@ version = "0.1.0"
 description = "Parse, integrity-check and analyse recorded NMEA 0183 logs from GNSS receivers."
 readme = "README.md"
 requires-python = ">=3.11"
+license = "MIT"  # code; data/real/ logs are BSD-2-Clause (data/real/GPSD-COPYING)
+license-files = ["LICENSE"]
 dependencies = [
     "pyyaml>=6",  # test profile files (yaml.safe_load only)
 ]

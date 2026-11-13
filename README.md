@@ -229,6 +229,14 @@ Full provenance, hashes and notes: [data/SOURCES.md](data/SOURCES.md).
   script and are not real recordings. Their truth position is the Royal Observatory,
   Greenwich, a public landmark.
 
+## Licence
+
+- **Code** (everything outside `data/real/`): MIT licence, Copyright 2026 Affira. See
+  [LICENSE](LICENSE). This includes the synthetic logs, which the project's own script
+  generates.
+- **Recorded logs in `data/real/`**: BSD-2-Clause, Copyright the GPSD project. See
+  [data/real/GPSD-COPYING](data/real/GPSD-COPYING). They are redistributed unchanged.
+
 ## Prompts
 
 The prompts used to build this project are in [prompts/](prompts/).
