@@ -13,8 +13,10 @@ from robot.api.deco import keyword, library
 from gnsskit.analysis import EventKind, analyse
 from gnsskit.faults import FaultPlan, inject
 from gnsskit.log import read_lines
+from gnsskit.synthetic import TRUTH_LAT, TRUTH_LON
 
 DATA = Path(__file__).resolve().parents[2] / "data" / "real"
+SYNTHETIC = DATA.parent / "synthetic"
 
 
 @library(scope="TEST", auto_keywords=False)
@@ -32,6 +34,10 @@ class GnssLibrary:
     @keyword('the recorded log "${name}"')
     def the_recorded_log(self, name: str) -> None:
         self.lines = (DATA / name).read_text().splitlines()
+
+    @keyword('the synthetic log "${name}"')
+    def the_synthetic_log(self, name: str) -> None:
+        self.lines = (SYNTHETIC / name).read_text().splitlines()
 
     @keyword("a ${seconds:\\d+}-second outage starting at ${start:\\d+} s")
     def outage(self, seconds: int, start: int) -> None:
@@ -76,13 +82,17 @@ class GnssLibrary:
     # ------------------------------------------------------------------- When
 
     @keyword("the log is analysed")
-    def analysed(self) -> None:
+    def analysed(self, reference: tuple[float, float] | None = None) -> None:
         lines = self.lines
         if self.injected:
             result = inject(lines, self.plan, source="acceptance")
             lines, self.manifest = result.lines, result.manifest
         self.log = read_lines(lines)
-        self.analysis = analyse(self.log)
+        self.analysis = analyse(self.log, reference=reference)
+
+    @keyword("the log is analysed against the true position")
+    def analysed_against_truth(self) -> None:
+        self.analysed(reference=(TRUTH_LAT, TRUTH_LON))
 
     # ------------------------------------------------------------------- Then
 
@@ -96,6 +106,18 @@ class GnssLibrary:
     @keyword("${n:\\d+} fix-regained ${_noun:events?} reported")
     def fix_regained_events(self, n: int, _noun: str) -> None:
         _equal(len(self._events(EventKind.FIX_REGAINED)), int(n), "fix-regained events")
+
+    @keyword("time to first fix is ${seconds:\\d+} seconds")
+    def ttff(self, seconds: int) -> None:
+        _equal(self.analysis.ttff_s, float(seconds), "TTFF (s)")
+
+    @keyword("${which:CEP50|CEP95} is within ${pct:\\d+} % of ${metres:[\\d.]+} m")
+    def cep_within(self, which: str, pct: int, metres: str) -> None:
+        acc = self.analysis.accuracy
+        actual = acc.cep50_m if which == "CEP50" else acc.cep95_m
+        target = float(metres)
+        if abs(actual - target) > target * int(pct) / 100:
+            raise AssertionError(f"{which}: {actual:.3f} m is not within {pct} % of {target} m")
 
     @keyword("the outage lasts ${seconds:\\d+} seconds")
     def outage_lasts(self, seconds: int) -> None:
